@@ -20,31 +20,40 @@ This script can be run both locally and in a cloud environment like Google Colab
 ### - Python
 
 Google Colab comes with pre-installed python, so no need to install manually. If you run this locally, make sure that you have Python installed.
-- `$ python --version` to check the python version.
+- `python --version` to check the python version.
 
 ### - Weights & Biases
 
 [Weights & Biases](https://wandb.ai/site) is used for monitoring the training.
 
-- `$ pip install wandb -qU` in local environment and `$ !pip install wandb -qU` in colab to install
+- `pip install wandb -qU` in local environment and `!pip install wandb -qU` in colab to install
 
 ### - Flask
 
 Selected python framework for REST API development. [Flask](https://flask.palletsprojects.com/en/3.0.x/) is a micro framework for web application development
 
-- `$ pip install flask` to install
+- `pip install flask` to install
 
 ## **Setup**
+
+### Clone the repository
+
+- Open a terminal in your computer or a cell in colab and execure `git clone https://github.com/Gihan-Liyanage/pytorch-ann.git` to clone the repo.
+
+- `cd pytorch-ann` to go to the project root directory
 
 ### Create a Python virtual environment and activate
 
 We should always maintain isolated environments for projects to avoid issues with python package versions etc. (no need to do in Colab)
 
-- `$ cd mlp` from thr project root
+- `cd mlp` from thr project root
 
-- `$ python -m venv <env-name>` to create an environment
+- `python -m venv env` to create an environment. Here, our environment name is `env`
 
-- `$ source <env-name>/bin/activate` to activate the environment
+- `source env/bin/activate` to activate the environment for Mac and Linux. (`env\Scripts\activate` for Windows)
+
+- `pip install -r requirements.txt` to install required packages
+
 
 ### Training
 
@@ -52,7 +61,7 @@ Provide the correct paths in `mlp_training.ipynb` file and execute the training 
 
 ### Flask APP
 
-After training and saving the model artifacts in the model folder, run `$ python app.py` to start the flask server for inference.
+After training and saving the model artifacts in the model folder, run `python app.py` to start the flask server for inference.
 
 - The server will be available locally on `localhost:5000` and you can call the endpoint `http://127.0.0.1:5000/predict` to call the api.
 

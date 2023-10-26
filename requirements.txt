@@ -1,0 +1,5 @@
+Flask==3.0.0
+numpy==1.26.1
+pandas==2.1.1
+sklearn==0.0.post10
+torch==2.1.0
