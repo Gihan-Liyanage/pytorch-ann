@@ -1,0 +1,96 @@
+service: mnist-mlp
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: dev
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Resource: '*'
+          Action:
+            - 's3:*'
+            - 'ssm:*'
+            - 'sqs:*'
+            - 's3:GetObject'
+            - 's3:PutObject'
+            - 's3:DeleteObject'
+            - 'lambda:InvokeFunction'
+            - 'lambda:InvokeAsync'
+
+
+functions:
+  predict-number:
+    handler: handler.hello
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - MlpQueue
+              - Arn
+          batchSize: 1
+
+
+resources:
+  Resources:
+    # S3 Bucket
+    MlpBucket:
+      Type: AWS::S3::Bucket
+      DependsOn:
+        - MlpQueue
+      Properties:
+        BucketName: codigo-mlp-bucket
+        NotificationConfiguration:
+          QueueConfigurations:
+            - Event: s3:ObjectCreated:*
+              Queue:
+                Fn::GetAtt:
+                  - MlpQueue
+                  - Arn
+
+    MlpQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: codigo-mlp-queue
+        VisibilityTimeout: 
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - MlpDeadLetterQueue
+              - Arn
+          maxReceiveCount: 1
+    
+    MlpDeadLetterQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: backout-codigo-mlp-queue
+
+    # Queue policy
+    MlpQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref MlpQueue
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: s3.amazonaws.com
+              Action: sqs:sendMessage
+              Resource:
+                Fn::GetAtt:
+                  - MlpQueue
+                  - Arn
+              Condition:
+                ArnLike:
+                  aws:SourceArn: 
+                    Fn::GetAtt:
+                      - MlpBucket
+                      - Arn
+                StringEquals:
+                  aws:SourceAccount: !Ref AWS::AccountId    
